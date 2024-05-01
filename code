@@ -1,1 +1,78 @@
+rm(list=ls(all=TRUE))
+cat("\014")
 
+setwd("C:/Users/hecto/Documents/hotel")
+# Cargar el conjunto de datos
+hotel_data <- read.csv("hotel_bookings.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# Descripción de la estructura de los datos
+str(hotel_data)
+head(hotel_data)
+dim(hotel_data)
+summary(hotel_data)
+
+
+# Visualización de datos de la columna hotel
+table_hotel<-table(hotel_data$hotel)
+view(table_hotel)
+
+# Muestra de gráfico de barras
+hotel_data$arrival_date_month <- factor(hotel_data$arrival_date_month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+barplot(table(hotel_data$arrival_date_month), col = "skyblue")
+
+# Muestra de histograma
+hist(hotel_data$lead_time, col = "beige")
+
+# Identificar datos faltantes (NA) y reemplazarlos por 0
+missing_data <- colSums(is.na(hotel_data))
+missing_data
+hotel_data$children <- replace(hotel_data$children, is.na(hotel_data$children), 0)
+hotel_data$children[is.na(hotel_data$children)] <- 0
+
+
+
+
+
+
+# Ejemplo de boxplot para identificar outliers en la variable "variable_de_interes"
+boxplot(hotel_data$lead_time)
+
+# Manipulación de datos con dplyr para separar en 2 tablas
+install.packages("dplyr")
+library("dplyr")
+resort_data <- subset(hotel_data, hotel == "Resort Hotel")
+city_data <- subset(hotel_data, hotel == "City Hotel")
+
+
+install.packages("tidyverse")
+library(tidyverse)
+# Mostrar cancelaciones de cada hotel
+cancelations_by_hotel <- table(hotel_data$hotel, hotel_data$is_canceled)
+print(cancelations_by_hotel)
+
+cancelation_analysis <- hotel_data %>%
+  group_by(hotel, is_canceled) %>%
+  summarise(count = n()) %>%
+  mutate(cancelation_rate = count / sum(count) * 100)
+
+
+
+
+
+# Identificar datos atípicos (Outliers)
+# Se puede usar diferentes técnicas como boxplots, histogramas, o métodos estadísticos como z-score o IQR.
+
+# Ejemplo de boxplot para identificar outliers en una variable
+boxplot(hotel_data$lead_time)
+
+# Ejemplo de histograma para identificar la distribución de una variable
+hist(hotel_data$lead_time)
+
+# Cálculo del rango intercuartílico para identificar outliers en la variable "variable_de_interes"
+Q1 <- quantile(hotel_data$lead_time, 0.25)
+Q3 <- quantile(hotel_data$lead_time, 0.75)
+IQR <- Q3 - Q1
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+# Identificar outliers
+outliers <- hotel_data$lead_time[hotel_data$lead_time < lower_bound | hotel_data$lead_time>upper_bound]
